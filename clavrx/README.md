@@ -3,10 +3,17 @@ Builds [CLAVR-x source code](https://gitlab.ssec.wisc.edu/clavrx/clavrx-dev.git)
 
 ## Run instructions
 ### Set up
-CLAVR-x is intended to be built in an environment described by the Dockerfile in the dependencies folder named `clavrx-deps`. If the dependencies image is named differently, the Dockerfile will need to be modified to account for this. The Dockerfile also assumes that the [CLAVR-x source code](https://gitlab.ssec.wisc.edu/clavrx/clavrx-dev.git) is in the same directory as the Dockerfile.
+CLAVR-x is intended to be built in a Docker image described by the Dockerfile in the dependencies folder named `clavrx-deps:rockylinux8.7`. If the dependencies image is named differently, 
+the Dockerfile will need to be modified to account for this. 
+The Dockerfile also assumes that the [CLAVR-x source code](https://gitlab.ssec.wisc.edu/clavrx/clavrx-dev.git) is in the same directory as the Dockerfile.
+<br>
+To get the code and set it up:
+`git clone https://gitlab.ssec.wisc.edu/clavrx/clavrx-dev.git CLAVRx`
+`cd CLAVRx`
+`git checkout develop`
 
 ### Building the Image
-Build the CLAVR-X image using the command `docker build -t clavrx-src .` Note the `.` assumes you are working in the directory that
+Build the CLAVR-X image using the command `docker build -t clavrx-src:develop --network host .` Note the `.` assumes you are working in the directory that
 contains the Dockerfile. To provide an alternate path, trade the period
 out for `-f /path/to/the/Dockerfile`
 
