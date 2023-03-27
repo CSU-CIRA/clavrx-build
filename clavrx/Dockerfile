@@ -1,32 +1,26 @@
-FROM clavrx-deps:latest
+FROM clavrx-deps:rockylinux8.7
 
-ADD clavrx-dev /install_clavrx/clavrx-dev/
+RUN dnf install -y python3.9 which
+# Need to create a simlink instead of an alias because 
+# the alias only exists for that intermediate layer in the image
+RUN cd "$(dirname $(which python3))" && ln -s python3 python
 
-ENV hdf4_gcc /install_clavrx/lib/hdf4/
-ENV hdf5_gcc /install_clavrx/lib/hdf5/
-ENV netcdf_gcc /install_clavrx/lib/netcdf4/
+WORKDIR /install_clavrx
 
-# Move the include and src (libs end up in src) dirs somewhere more useful
-# and out of the workdir so we can delete that from the image
-# I could not get the CLAVR-x build to work with the Himawari library
-# Lots of undefined reference to `operator delete(void*, unsigned long)' errors
-# and undefined reference to `std::__throw_out_of_range_fmt(char const*, ...)' errors
-# even if I add devtoolset-7 include paths to the libhimawari makefile and make depend exits without error
-#ENV LIBHIM_PATH /workdir/libhimawari/
+# The next directive assumes that you have the CLAVR-x source
+# code cloned into directory where the Dockerfile is and 
+# that you are working on the develop branch (main
+# doesn't have quickstart capability yet).
+# To get the code and set it up:
+# `git clone https://gitlab.ssec.wisc.edu/clavrx/clavrx-dev.git CLAVRx`
+# `cd CLAVRx`
+# `git checkout develop`
 
-# Move the bin, lib, and include dirs somewhere more useful 
-# and out of the workdir so we can delete that from the image
-ENV RTTOV_PATH /workdir/RTTOV123/
+ADD CLAVRx CLAVRx/
 
-ENV FC gfortran
-ENV ARCH gfortran
-ENV FFLAGS -g
-ENV fflags -g
+ADD user_change_me-rockylinux-docker.cfg CLAVRx/build/env_settings/user_change_me.cfg
 
-WORKDIR /install_clavrx/clavrx-dev
+RUN cd CLAVRx/build && ./admin clean ALL && ./admin build
 
-#RUN ./configure -LIBHIM_GCC=$LIBHIM_PATH --rttov_path=$RTTOV_PATH -hdf4_gcc=$hdf4_gcc -hdf5_gcc=$hdf5_gcc -netcdf_gcc=$netcdf_gcc
-RUN source scl_source enable devtoolset-7 && \
-./configure --rttov_path=$RTTOV_PATH -hdf4_gcc=$hdf4_gcc -hdf5_gcc=$hdf5_gcc -netcdf_gcc=$netcdf_gcc && \
-cd main_src && make all_plus
+ENV PATH $PATH:/install_clavrx/CLAVRx/run/bin
 
